@@ -6,7 +6,7 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.17.6
+NGINX_MAINLINE_VER=1.17.7
 NGINX_STABLE_VER=1.16.1
 LIBRESSL_VER=2.9.2
 OPENSSL_VER=1.1.1d
@@ -314,7 +314,9 @@ case $OPTION in
 		--with-http_slice_module \
 		--with-http_stub_status_module \
 		--with-http_realip_module \
-		--with-http_sub_module"
+		--with-http_sub_module \
+		--with-stream \
+                --with-stream_ssl_preread_module"
 
 		# Optional modules
 		if [[ "$LIBRESSL" = 'y' ]]; then

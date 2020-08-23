@@ -6,14 +6,14 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.17.7
-NGINX_STABLE_VER=1.16.1
-LIBRESSL_VER=2.9.2
-OPENSSL_VER=1.1.1d
+NGINX_MAINLINE_VER=1.19.2
+NGINX_STABLE_VER=1.18.0
+LIBRESSL_VER=3.1.2
+OPENSSL_VER=1.1.1g
 NPS_VER=1.13.35.2
 HEADERMOD_VER=0.33
-LIBMAXMINDDB_VER=1.3.2
-GEOIP2_VER=3.2
+LIBMAXMINDDB_VER=1.4.3
+GEOIP2_VER=3.3
 
 # Define installation paramaters for headless install (fallback if unspecifed)
 if [[ "$HEADLESS" == "y" ]]; then
@@ -211,8 +211,8 @@ case $OPTION in
 
 			mkdir geoip-db
 			cd geoip-db || exit 1
-			wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
-			wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz
+			wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.tar.gz
+			wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.tar.gz
 			tar -xf GeoLite2-City.tar.gz
 			tar -xf GeoLite2-Country.tar.gz
 			mkdir /opt/geoip
@@ -263,7 +263,7 @@ case $OPTION in
 			git submodule init
 			git submodule update
 			./build.sh
-			./configure
+			./configure --with-maxmind=no
 			make
 			make install
 			mkdir /etc/nginx/modsec

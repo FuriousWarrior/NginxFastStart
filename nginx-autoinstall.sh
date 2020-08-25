@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$EUID" -ne 0 ]]; then
+if [[ $EUID -ne 0 ]]; then
 	echo -e "Sorry, you need to run this as root"
 	exit 1
 fi
@@ -16,7 +16,7 @@ LIBMAXMINDDB_VER=1.4.3
 GEOIP2_VER=3.3
 
 # Define installation paramaters for headless install (fallback if unspecifed)
-if [[ "$HEADLESS" == "y" ]]; then
+if [[ $HEADLESS == "y" ]]; then
 	OPTION=${OPTION:-1}
 	NGINX_VER=${NGINX_VER:-1}
 	PAGESPEED=${PAGESPEED:-n}
@@ -35,11 +35,11 @@ if [[ "$HEADLESS" == "y" ]]; then
 fi
 
 # Clean screen before launching menu
-if [[ "$HEADLESS" == "n" ]]; then
+if [[ $HEADLESS == "n" ]]; then
 	clear
 fi
 
-if [[ "$HEADLESS" != "y" ]]; then
+if [[ $HEADLESS != "y" ]]; then
 	echo ""
 	echo "Welcome to the nginx-autoinstall script."
 	echo ""
@@ -56,7 +56,7 @@ fi
 
 case $OPTION in
 1)
-	if [[ "$HEADLESS" != "y" ]]; then
+	if [[ $HEADLESS != "y" ]]; then
 		echo ""
 		echo "This script will install Nginx with some optional modules."
 		echo ""
@@ -80,7 +80,7 @@ case $OPTION in
 		NGINX_VER=$NGINX_STABLE_VER
 		;;
 	esac
-	if [[ "$HEADLESS" != "y" ]]; then
+	if [[ $HEADLESS != "y" ]]; then
 		echo ""
 		echo "Please tell me which modules you want to install."
 		echo "If you select none, Nginx will be installed with its default modules."
@@ -116,10 +116,10 @@ case $OPTION in
 		while [[ $MODSEC != "y" && $MODSEC != "n" ]]; do
 			read -rp "       nginx ModSecurity [y/n]: " -e MODSEC
 		done
-		if [[ "$MODSEC" = 'y' ]]; then
+		if [[ $MODSEC == 'y' ]]; then
 			read -rp "       Enable nginx ModSecurity? [y/n]: " -e MODSEC_ENABLE
 		fi
-		if [[ "$HTTP3" != 'y' ]]; then
+		if [[ $HTTP3 != 'y' ]]; then
 			echo ""
 			echo "Choose your OpenSSL implementation:"
 			echo "   1) System's OpenSSL ($(openssl version | cut -c9-14))"
@@ -131,7 +131,7 @@ case $OPTION in
 			done
 		fi
 	fi
-	if [[ "$HTTP3" != 'y' ]]; then
+	if [[ $HTTP3 != 'y' ]]; then
 		case $SSL in
 		1) ;;
 
@@ -146,7 +146,7 @@ case $OPTION in
 			;;
 		esac
 	fi
-	if [[ "$HEADLESS" != "y" ]]; then
+	if [[ $HEADLESS != "y" ]]; then
 		echo ""
 		read -n1 -r -p "Nginx is ready to be installed, press any key to continue..."
 		echo ""
@@ -161,12 +161,12 @@ case $OPTION in
 	apt-get update
 	apt-get install -y build-essential ca-certificates wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev cmake
 
-	if [[ "$MODSEC" = 'y' ]]; then
+	if [[ $MODSEC == 'y' ]]; then
 		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf
 	fi
 
 	# PageSpeed
-	if [[ "$PAGESPEED" = 'y' ]]; then
+	if [[ $PAGESPEED == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		wget https://github.com/pagespeed/ngx_pagespeed/archive/v${NPS_VER}-stable.zip
 		unzip v${NPS_VER}-stable.zip
@@ -178,23 +178,23 @@ case $OPTION in
 	fi
 
 	#Brotli
-	if [[ "$BROTLI" = 'y' ]]; then
+	if [[ $BROTLI == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
-		git clone https://github.com/eustas/ngx_brotli
+		git clone --depth 1 https://github.com/eustas/ngx_brotli
 		cd ngx_brotli || exit 1
 		git checkout v0.1.2
 		git submodule update --init
 	fi
 
 	# More Headers
-	if [[ "$HEADERMOD" = 'y' ]]; then
+	if [[ $HEADERMOD == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		wget https://github.com/openresty/headers-more-nginx-module/archive/v${HEADERMOD_VER}.tar.gz
 		tar xaf v${HEADERMOD_VER}.tar.gz
 	fi
 
 	# GeoIP
-	if [[ "$GEOIP" = 'y' ]]; then
+	if [[ $GEOIP == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		# install libmaxminddb
 		wget https://github.com/maxmind/libmaxminddb/releases/download/${LIBMAXMINDDB_VER}/libmaxminddb-${LIBMAXMINDDB_VER}.tar.gz
@@ -224,13 +224,13 @@ case $OPTION in
 	fi
 
 	# Cache Purge
-	if [[ "$CACHEPURGE" = 'y' ]]; then
+	if [[ $CACHEPURGE == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		git clone https://github.com/FRiCKLE/ngx_cache_purge
 	fi
 
 	# LibreSSL
-	if [[ "$LIBRESSL" = 'y' ]]; then
+	if [[ $LIBRESSL == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		mkdir libressl-${LIBRESSL_VER}
 		cd libressl-${LIBRESSL_VER} || exit 1
@@ -246,7 +246,7 @@ case $OPTION in
 	fi
 
 	# OpenSSL
-	if [[ "$OPENSSL" = 'y' ]]; then
+	if [[ $OPENSSL == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		wget https://www.openssl.org/source/openssl-${OPENSSL_VER}.tar.gz
 		tar xaf openssl-${OPENSSL_VER}.tar.gz
@@ -256,7 +256,7 @@ case $OPTION in
 	fi
 
 	# ModSecurity
-	if [[ "$MODSEC" = 'y' ]]; then
+	if [[ $MODSEC == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
 		cd ModSecurity || exit 1
@@ -271,7 +271,7 @@ case $OPTION in
 		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/conf/modsecurity.conf
 
 		# Enable ModSecurity in Nginx
-		if [[ "$MODSEC_ENABLE" = 'y' ]]; then
+		if [[ $MODSEC_ENABLE == 'y' ]]; then
 			sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf
 		fi
 		# OWASP Rules
@@ -309,8 +309,8 @@ case $OPTION in
 		--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
 		--user=nginx \
 		--group=nginx \
-		--with-cc-opt=-Wno-deprecated-declarations"
-
+		--with-cc-opt=-Wno-deprecated-declarations \
+		--with-cc-opt=-Wno-ignored-qualifiers"
 	NGINX_MODULES="--with-threads \
 		--with-file-aio \
 		--with-http_ssl_module \
@@ -322,84 +322,84 @@ case $OPTION in
 		--with-http_realip_module \
 		--with-http_sub_module \
 		--with-stream \
-                --with-stream_ssl_preread_module"
+        --with-stream_ssl_preread_module"
 
 	# Optional modules
-	if [[ "$LIBRESSL" = 'y' ]]; then
+	if [[ $LIBRESSL == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --with-openssl=/usr/local/src/nginx/modules/libressl-${LIBRESSL_VER}
 		)
 	fi
 
-	if [[ "$PAGESPEED" = 'y' ]]; then
+	if [[ $PAGESPEED == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo "--add-module=/usr/local/src/nginx/modules/incubator-pagespeed-ngx-${NPS_VER}-stable"
 		)
 	fi
 
-	if [[ "$BROTLI" = 'y' ]]; then
+	if [[ $BROTLI == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo "--add-module=/usr/local/src/nginx/modules/ngx_brotli"
 		)
 	fi
 
-	if [[ "$HEADERMOD" = 'y' ]]; then
+	if [[ $HEADERMOD == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo "--add-module=/usr/local/src/nginx/modules/headers-more-nginx-module-${HEADERMOD_VER}"
 		)
 	fi
 
-	if [[ "$GEOIP" = 'y' ]]; then
+	if [[ $GEOIP == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo "--add-module=/usr/local/src/nginx/modules/ngx_http_geoip2_module-${GEOIP2_VER}"
 		)
 	fi
 
-	if [[ "$OPENSSL" = 'y' ]]; then
+	if [[ $OPENSSL == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo "--with-openssl=/usr/local/src/nginx/modules/openssl-${OPENSSL_VER}"
 		)
 	fi
 
-	if [[ "$CACHEPURGE" = 'y' ]]; then
+	if [[ $CACHEPURGE == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo "--add-module=/usr/local/src/nginx/modules/ngx_cache_purge"
 		)
 	fi
 
-	if [[ "$FANCYINDEX" = 'y' ]]; then
-		git clone --quiet https://github.com/aperezdc/ngx-fancyindex.git /usr/local/src/nginx/modules/fancyindex
+	if [[ $FANCYINDEX == 'y' ]]; then
+		git clone --depth 1 --quiet https://github.com/aperezdc/ngx-fancyindex.git /usr/local/src/nginx/modules/fancyindex
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --add-module=/usr/local/src/nginx/modules/fancyindex
 		)
 	fi
 
-	if [[ "$WEBDAV" = 'y' ]]; then
-		git clone --quiet https://github.com/arut/nginx-dav-ext-module.git /usr/local/src/nginx/modules/nginx-dav-ext-module
+	if [[ $WEBDAV == 'y' ]]; then
+		git clone --depth 1 --quiet https://github.com/arut/nginx-dav-ext-module.git /usr/local/src/nginx/modules/nginx-dav-ext-module
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --with-http_dav_module --add-module=/usr/local/src/nginx/modules/nginx-dav-ext-module
 		)
 	fi
 
-	if [[ "$VTS" = 'y' ]]; then
-		git clone --quiet https://github.com/vozlt/nginx-module-vts.git /usr/local/src/nginx/modules/nginx-module-vts
+	if [[ $VTS == 'y' ]]; then
+		git clone --depth 1 --quiet https://github.com/vozlt/nginx-module-vts.git /usr/local/src/nginx/modules/nginx-module-vts
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --add-module=/usr/local/src/nginx/modules/nginx-module-vts
 		)
 	fi
 
-	if [[ "$MODSEC" = 'y' ]]; then
-		git clone --quiet https://github.com/SpiderLabs/ModSecurity-nginx.git /usr/local/src/nginx/modules/ModSecurity-nginx
+	if [[ $MODSEC == 'y' ]]; then
+		git clone --depth 1 --quiet https://github.com/SpiderLabs/ModSecurity-nginx.git /usr/local/src/nginx/modules/ModSecurity-nginx
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --add-module=/usr/local/src/nginx/modules/ModSecurity-nginx
@@ -407,9 +407,9 @@ case $OPTION in
 	fi
 
 	# HTTP3
-	if [[ "$HTTP3" = 'y' ]]; then
+	if [[ $HTTP3 == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
-		git clone --recursive https://github.com/cloudflare/quiche
+		git clone --depth 1 --recursive https://github.com/cloudflare/quiche
 		# Dependencies for BoringSSL and Quiche
 		apt-get install -y golang
 		# Rust is not packaged so that's the only way...
@@ -430,7 +430,7 @@ case $OPTION in
 		)
 	fi
 
-	./configure "$NGINX_OPTIONS" "$NGINX_MODULES"
+	./configure $NGINX_OPTIONS $NGINX_MODULES
 	make -j "$(nproc)"
 	make install
 
@@ -473,7 +473,7 @@ case $OPTION in
 	# Block Nginx from being installed via APT
 	if [[ $(lsb_release -si) == "Debian" ]] || [[ $(lsb_release -si) == "Ubuntu" ]]; then
 		cd /etc/apt/preferences.d/ || exit 1
-		echo -e "Package: nginx*\\nPin: release *\\nPin-Priority: -1" >nginx-block
+		echo -e 'Package: nginx*\nPin: release *\nPin-Priority: -1' >nginx-block
 	fi
 
 	# Removing temporary Nginx and modules files
@@ -484,7 +484,7 @@ case $OPTION in
 	exit
 	;;
 2) # Uninstall Nginx
-	if [[ "$HEADLESS" != "y" ]]; then
+	if [[ $HEADLESS != "y" ]]; then
 		while [[ $RM_CONF != "y" && $RM_CONF != "n" ]]; do
 			read -rp "       Remove configuration files ? [y/n]: " -e RM_CONF
 		done
@@ -504,12 +504,12 @@ case $OPTION in
 		/etc/systemd/system/multi-user.target.wants/nginx.service
 
 	# Remove conf files
-	if [[ "$RM_CONF" = 'y' ]]; then
+	if [[ $RM_CONF == 'y' ]]; then
 		rm -r /etc/nginx/
 	fi
 
 	# Remove logs
-	if [[ "$RM_LOGS" = 'y' ]]; then
+	if [[ $RM_LOGS == 'y' ]]; then
 		rm -r /var/log/nginx
 	fi
 

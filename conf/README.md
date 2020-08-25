@@ -81,3 +81,28 @@ server {
     add_header alt-svc 'h3-23=":443"; ma=86400';
 }
 ```
+
+
+## ModSecurity
+
+```
+server {
+    listen 80;
+	modsecurity on;
+	modsecurity_rules_file /etc/nginx/modsec/main.conf;
+
+# If you have proxy
+    location / {    	
+    	proxy_pass http://192.168.x.x;
+    }
+}
+```
+
+## OWASP rules
+
+/etc/nginx/modsec/main.conf:
+```
+# OWASP CRS v3 rules
+Include /etc/nginx/modsec/coreruleset-3.3.0/crs-setup.conf
+Include /etc/nginx/modsec/coreruleset-3.3.0/rules/*.conf
+```

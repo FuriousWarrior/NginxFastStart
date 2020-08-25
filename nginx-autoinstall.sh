@@ -205,7 +205,7 @@ case $OPTION in
 			make install
 			ldconfig
 
-			cd ../
+			cd ../ || exit 1
 			wget https://github.com/leev/ngx_http_geoip2_module/archive/${GEOIP2_VER}.tar.gz
 			tar xaf ${GEOIP2_VER}.tar.gz
 
@@ -218,7 +218,7 @@ case $OPTION in
 			mkdir /opt/geoip
 			cd GeoLite2-City_*/ || exit 1
 			mv GeoLite2-City.mmdb /opt/geoip/
-			cd ../
+			cd ../ || exit 1
 			cd GeoLite2-Country_*/ || exit 1
 			mv GeoLite2-Country.mmdb /opt/geoip/
 		fi

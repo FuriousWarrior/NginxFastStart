@@ -463,8 +463,23 @@ case $OPTION in
 	if [[ ! -d /etc/nginx/sites-enabled ]]; then
 		mkdir -p /etc/nginx/sites-enabled
 	fi
+	if [[ ! -d /etc/nginx/ssl ]]; then
+		mkdir -p /etc/nginx/ssl
+	fi
+	if [[ ! -d /etc/nginx/global ]]; then
+		mkdir -p /etc/nginx/global
+	fi
 	if [[ ! -d /etc/nginx/conf.d ]]; then
 		mkdir -p /etc/nginx/conf.d
+	fi
+
+	if [[ ! -e /etc/nginx/ssl/ssl.conf ]]; then
+		cd /etc/nginx/ssl || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/conf/ssl.conf
+	fi
+	if [[ ! -e /etc/nginx/global/security.conf ]]; then
+		cd /etc/nginx/global || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/conf/security.conf
 	fi
 
 	# Restart Nginx

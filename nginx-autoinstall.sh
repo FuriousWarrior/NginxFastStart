@@ -327,8 +327,7 @@ case $OPTION in
 		--user=nginx \
 		--group=nginx \
 		--with-cc-opt=-Wno-deprecated-declarations \
-		--with-cc-opt=-Wno-ignored-qualifiers \
-		--with-cc-opt='-std=gnu99'"
+		--with-cc-opt=-Wno-ignored-qualifiers"
 	NGINX_MODULES="--with-threads \
 		--with-file-aio \
 		--with-http_ssl_module \

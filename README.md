@@ -1,7 +1,6 @@
 # NginxFastStart
+
 Compile Nginx with custom modules on latest Debian and Ubuntu  
-
-
 ## Compatibility
 
 * x86, x64, arm*
@@ -52,8 +51,6 @@ You can check [configuration examples](https://github.com/FuriousWarrior/NginxFa
 
 Just select the option when running the script :
 
-
-
 You have the choice to delete the logs and the conf.
 
 ## Update Nginx
@@ -63,8 +60,6 @@ To update Nginx, run the script and install Nginx again. It will overwrite curre
 ## Update the script
 
 The update feature downloads the script from this repository, and overwrites the current `nginx-autoinstall.sh` file in the working directory. This allows you to get the latest features, bug fixes, and module versions automatically.
-
-
 
 ## Headless use
 
@@ -97,7 +92,7 @@ All the default variables are set at the beginning of the script.
 
 ## Log file
 
-A log file is created when running the script. It is located at `/tmp/nginx-autoinstall.log`.
+A log file is created when running the script. It is located at "/tmp/nginx-autoinstall.log".
 
 ## LICENSE
 

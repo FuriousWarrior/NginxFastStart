@@ -6,8 +6,8 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.19.10
-NGINX_STABLE_VER=1.20.0
+NGINX_MAINLINE_VER=1.21.0
+NGINX_STABLE_VER=1.20.1
 LIBRESSL_VER=3.3.3
 OPENSSL_VER=1.1.1k
 NPS_VER=1.13.35.2
@@ -29,6 +29,8 @@ if [[ $HEADLESS == "y" ]]; then
 	VTS=${VTS:-n}
 	HTTP3=${HTTP3:-n}
 	MODSEC=${MODSEC:-n}
+	RTMP=${RTMP:-n}
+	NGXWAF=${NGXWAF:-n}
 	SSL=${SSL:-1}
 	RM_CONF=${RM_CONF:-y}
 	RM_LOGS=${RM_LOGS:-y}
@@ -113,6 +115,12 @@ case $OPTION in
 		while [[ $HTTP3 != "y" && $HTTP3 != "n" ]]; do
 			read -rp "       HTTP/3 (by Cloudflare, WILL INSTALL BoringSSL, Quiche, Rust and Go) [y/n]: " -e HTTP3
 		done
+		while [[ $RTMP != "y" && $RTMP != "n" ]]; do
+			read -rp "       nginx RTMP [y/n]: " -e -i n RTMP
+		done
+		while [[ $NGXWAF != "y" && $NGXWAF != "n" ]]; do
+			read -rp "       nginx NGXWAF [y/n]: " -e NGXWAF
+		done
 		while [[ $MODSEC != "y" && $MODSEC != "n" ]]; do
 			read -rp "       nginx ModSecurity [y/n]: " -e MODSEC
 		done
@@ -159,7 +167,7 @@ case $OPTION in
 
 	# Dependencies
 	apt-get update
-	apt-get install -y build-essential ca-certificates wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev cmake
+	apt-get install -y build-essential ca-certificates wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
 
 	if [[ $MODSEC == 'y' ]]; then
 		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf
@@ -253,6 +261,14 @@ case $OPTION in
 		cd openssl-${OPENSSL_VER} || exit 1
 
 		./config
+	fi
+
+	# NGXWAF
+	if [[ $NGXWAF == 'y' ]]; then
+	cd /usr/local/src/nginx/modules || exit 1
+	git clone -b master https://github.com/ADD-SP/ngx_waf.git
+	cd ngx_waf || exit 1
+	git clone https://github.com/libinjection/libinjection.git inc/libinjection
 	fi
 
 	# ModSecurity
@@ -403,6 +419,22 @@ case $OPTION in
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --add-module=/usr/local/src/nginx/modules/ModSecurity-nginx
+		)
+	fi
+
+	if [[ $RTMP == 'y' ]]; then
+		git clone --quiet https://github.com/arut/nginx-rtmp-module.git /usr/local/src/nginx/modules/nginx-rtmp-module
+		NGINX_MODULES=$(
+			echo "$NGINX_MODULES"
+			echo --add-module=/usr/local/src/nginx/modules/nginx-rtmp-module
+		)
+	fi
+
+	# NGXWAF
+	if [[ $NGXWAF == 'y' ]]; then
+		NGINX_MODULES=$(
+			echo "$NGINX_MODULES"
+			echo "--add-module=/usr/local/src/nginx/modules/ngx_waf"
 		)
 	fi
 

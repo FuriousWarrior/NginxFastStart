@@ -34,6 +34,7 @@ Compile Nginx with custom modules on latest Debian and Ubuntu
 * [ModSecurity from source](https://github.com/SpiderLabs/ModSecurity) (ModSecurity is an open source, cross platform web application firewall (WAF) engine for Apache, IIS and Nginx)
   * [ModSecurity-nginx](https://github.com/SpiderLabs/ModSecurity-nginx) (ModSecurity v3 Nginx Connector)
 * HTTP/3 using [Cloudflare's patch](https://blog.cloudflare.com/experiment-with-http-3-using-nginx-and-quiche/) with [Quiche](https://github.com/cloudflare/quiche) and [BoringSSL](https://github.com/google/boringssl).
+* [ngx_waf](https://github.com/ADD-SP/ngx_waf) (Handy, High performance Nginx firewall module)
 
 ## Install Nginx
 

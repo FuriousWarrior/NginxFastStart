@@ -1,0 +1,44 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+name: Compile NGINX
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu:16.04
+          - ubuntu:18.04
+          - ubuntu:20.04
+          - debian:8
+          - debian:9
+          - debian:10
+        nginx_ver:
+          - STABLE
+          - MAINLINE
+        install_type:
+          - LIGHT
+          - FULL
+        ssl:
+          - SYSTEM
+          - OPENSSL
+          - LIBRESSL
+        exclude:
+          # FULL assumes HTTP/3 which will use BoringSSL
+          # So we exclude these
+          - install_type: FULL
+            ssl: OPENSSL
+          - install_type: FULL
+            ssl: LIBRESSL
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build NGINX in Docker
+        run: docker build . --file .github/workflows/docker/Dockerfile --build-arg NGINX_VER=${{ matrix.nginx_ver }} --build-arg BASE_IMAGE=${{ matrix.os }} --build-arg INSTALL_TYPE=${{ matrix.install_type }} --build-arg SSL=${{ matrix.ssl }}

@@ -168,7 +168,7 @@ case $OPTION in
 
 	# Dependencies
 	apt-get update
-	apt-get install -y build-essential ca-certificates wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
+	apt-get install -y build-essential ca-certificates libsodium23 libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
 
 	if [[ $MODSEC == 'y' ]]; then
 		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf

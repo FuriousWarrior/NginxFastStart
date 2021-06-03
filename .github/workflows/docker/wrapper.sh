@@ -13,7 +13,7 @@ if [[ $INSTALL_TYPE == "FULL" ]]; then
     export VTS=y
     export RTMP=y
     export HTTP3=n
-    export NGXWAF=n
+    export NGXWAF=y
     export MODSEC=y
 fi
 

@@ -17,7 +17,6 @@ pagespeed GlobalAdminPath /pagespeed_global_admin;
 pagespeed FileCachePath /var/ngx_pagespeed_cache;
 ```
 
-
 ## Brotli
 
 Add this in your http block :
@@ -57,11 +56,11 @@ TLS- can be TLS13-.
 
 ## GeoIP 2
 
-See https://github.com/leev/ngx_http_geoip2_module#example-usage
+See <https://github.com/leev/ngx_http_geoip2_module#example-usage>
 
 ## HTTP/3
 
-See https://github.com/cloudflare/quiche/tree/master/extras/nginx#readme
+See <https://github.com/cloudflare/quiche/tree/master/extras/nginx#readme>
 
 ```nginx
 server {
@@ -82,18 +81,17 @@ server {
 }
 ```
 
-
 ## ModSecurity
 
-```
+```nginx
 server {
     listen 80;
-	modsecurity on;
-	modsecurity_rules_file /etc/nginx/modsec/main.conf;
+ modsecurity on;
+ modsecurity_rules_file /etc/nginx/modsec/main.conf;
 
 # If you have proxy
-    location / {    	
-    	proxy_pass http://192.168.x.x;
+    location / {     
+     proxy_pass http://192.168.x.x;
     }
 }
 ```
@@ -101,7 +99,8 @@ server {
 ## OWASP rules
 
 /etc/nginx/modsec/main.conf:
-```
+
+```nginx
 # OWASP CRS v3 rules
 Include /etc/nginx/modsec/coreruleset-3.3.0/crs-setup.conf
 Include /etc/nginx/modsec/coreruleset-3.3.0/rules/*.conf

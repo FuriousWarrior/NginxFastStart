@@ -1,6 +1,7 @@
 # NginxFastStart
 
 Compile Nginx with custom modules on latest Debian and Ubuntu  
+
 ## Compatibility
 
 * x86, x64, arm*
@@ -96,4 +97,4 @@ A log file is created when running the script. It is located at "/tmp/nginx-auto
 
 ## LICENSE
 
-MIT LICENSE 
+MIT LICENSE

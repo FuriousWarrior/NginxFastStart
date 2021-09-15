@@ -7,10 +7,10 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.21.0
+NGINX_MAINLINE_VER=1.21.3
 NGINX_STABLE_VER=1.20.1
-LIBRESSL_VER=3.3.3
-OPENSSL_VER=1.1.1k
+LIBRESSL_VER=3.3.4
+OPENSSL_VER=1.1.1l
 NPS_VER=1.13.35.2
 HEADERMOD_VER=0.33
 LIBMAXMINDDB_VER=1.6.0
@@ -44,8 +44,10 @@ fi
 
 if [[ $HEADLESS != "y" ]]; then
 	echo ""
-	echo "Welcome to the nginx-autoinstall script."
-	echo ""
+	echo "######################################################" 
+	echo "#       Welcome to the nginx-autoinstall script.     #"
+	echo "#       For Debian 8+ and Ubuntu 16+                 #"
+	echo "######################################################"
 	echo "What do you want to do?"
 	echo "   1) Install or update Nginx"
 	echo "   2) Uninstall Nginx"

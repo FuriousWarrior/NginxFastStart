@@ -5,7 +5,7 @@ Compile Nginx with custom modules on latest Debian and Ubuntu
 ## Compatibility
 
 * x86, x64, arm*
-* Debian 8 and later
+* Debian 10 and later
 * Ubuntu 16.04 and later
 
 ## Features

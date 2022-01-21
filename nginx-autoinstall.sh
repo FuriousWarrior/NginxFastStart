@@ -46,7 +46,7 @@ if [[ $HEADLESS != "y" ]]; then
 	echo ""
 	echo "######################################################" 
 	echo "#       Welcome to the nginx-autoinstall script.     #"
-	echo "#       For Debian 8+ and Ubuntu 16+                 #"
+	echo "#       For Debian 10+ and Ubuntu 16+                 #"
 	echo "######################################################"
 	echo "What do you want to do?"
 	echo "   1) Install or update Nginx"
@@ -294,7 +294,7 @@ case $OPTION in
 			sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf
 		fi
 		# OWASP Rules
-		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.0.tar.gz
+		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.2.tar.gz
 		cd /etc/nginx/modsec/ || exit 1
 		tar -xf coreruleset-3.3.0.tar.gz
 		cd coreruleset-3.3.0 || exit 1

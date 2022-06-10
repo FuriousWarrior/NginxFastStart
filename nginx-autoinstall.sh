@@ -7,10 +7,10 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.21.5
-NGINX_STABLE_VER=1.20.2
-LIBRESSL_VER=3.4.2
-OPENSSL_VER=1.1.1m
+NGINX_MAINLINE_VER=1.21.6
+NGINX_STABLE_VER=1.22.0
+LIBRESSL_VER=3.5.3
+OPENSSL_VER=1.1.1o
 NPS_VER=1.13.35.2
 HEADERMOD_VER=0.33
 LIBMAXMINDDB_VER=1.6.0
@@ -222,15 +222,10 @@ case $OPTION in
 
 		mkdir geoip-db
 		cd geoip-db || exit 1
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.tar.gz
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.tar.gz
-		tar -xf GeoLite2-City.tar.gz
-		tar -xf GeoLite2-Country.tar.gz
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.mmdb
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.mmdb
 		mkdir /opt/geoip
-		cd GeoLite2-City_*/ || exit 1
 		mv GeoLite2-City.mmdb /opt/geoip/
-		cd ../ || exit 1
-		cd GeoLite2-Country_*/ || exit 1
 		mv GeoLite2-Country.mmdb /opt/geoip/
 	fi
 
@@ -285,7 +280,7 @@ case $OPTION in
 		./configure --with-maxmind=no
 		make
 		make install
-		mkdir /etc/nginx/modsec
+		mkdir -p /etc/nginx/modsec/
 		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/conf/main.conf
 		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/conf/modsecurity.conf
 
@@ -296,8 +291,8 @@ case $OPTION in
 		# OWASP Rules
 		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.2.tar.gz
 		cd /etc/nginx/modsec/ || exit 1
-		tar -xf coreruleset-3.3.0.tar.gz
-		cd coreruleset-3.3.0 || exit 1
+		tar -xf coreruleset-3.3.2.tar.gz
+		cd coreruleset-3.3.2 || exit 1
 		cp crs-setup.conf.example crs-setup.conf
 	fi
 

@@ -175,7 +175,7 @@ case $OPTION in
 
 	# Dependencies
 	apt-get update
-	apt-get install -y build-essential ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
+	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
 
 	if [[ $MODSEC == 'y' ]]; then
 		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf
@@ -227,11 +227,15 @@ case $OPTION in
 
 		mkdir geoip-db
 		cd geoip-db || exit 1
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.mmdb
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.mmdb
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.7z
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.7z
+		7z x
+		7z x
 		mkdir /opt/geoip
 		mv GeoLite2-City.mmdb /opt/geoip/
 		mv GeoLite2-Country.mmdb /opt/geoip/
+		rm GeoLite2-Country.7z
+		rm GeoLite2-City.7z
 	fi
 
 	# Cache Purge

@@ -102,6 +102,6 @@ server {
 
 ```nginx
 # OWASP CRS v3 rules
-Include /etc/nginx/modsec/coreruleset-3.3.0/crs-setup.conf
-Include /etc/nginx/modsec/coreruleset-3.3.0/rules/*.conf
+Include /etc/nginx/modsec/coreruleset-3.3.4/crs-setup.conf
+Include /etc/nginx/modsec/coreruleset-3.3.4/rules/*.conf
 ```

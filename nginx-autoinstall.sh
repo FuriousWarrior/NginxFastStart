@@ -7,10 +7,11 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.21.6
+NGINX_MAINLINE_VER=1.23.1
 NGINX_STABLE_VER=1.22.0
 LIBRESSL_VER=3.5.3
-OPENSSL_VER=1.1.1o
+OPENSSL_VER=1.1.1q
+OPENSSL_NEXT=3.0
 NPS_VER=1.13.35.2
 HEADERMOD_VER=0.33
 LIBMAXMINDDB_VER=1.6.0
@@ -28,7 +29,7 @@ if [[ $HEADLESS == "y" ]]; then
 	CACHEPURGE=${CACHEPURGE:-n}
 	WEBDAV=${WEBDAV:-n}
 	VTS=${VTS:-n}
-	HTTP3=${HTTP3:-n}
+	GOSTNGX=${GOSTNGX:-n}
 	MODSEC=${MODSEC:-n}
 	RTMP=${RTMP:-n}
 	NGXWAF=${NGXWAF:-n}
@@ -46,7 +47,7 @@ if [[ $HEADLESS != "y" ]]; then
 	echo ""
 	echo "######################################################" 
 	echo "#       Welcome to the nginx-autoinstall script.     #"
-	echo "#       For Debian 10+ and Ubuntu 16+                 #"
+	echo "#       For Debian 10+ and Ubuntu 16+                #"
 	echo "######################################################"
 	echo "What do you want to do?"
 	echo "   1) Install or update Nginx"
@@ -115,8 +116,8 @@ case $OPTION in
 		while [[ $VTS != "y" && $VTS != "n" ]]; do
 			read -rp "       nginx VTS [y/n]: " -e VTS
 		done
-		while [[ $HTTP3 != "y" && $HTTP3 != "n" ]]; do
-			read -rp "       HTTP/3 (by Cloudflare, WILL INSTALL BoringSSL, Quiche, Rust and Go) [y/n]: " -e HTTP3
+		while [[ $GOSTNGX != "y" && $GOSTNGX != "n" ]]; do
+			read -rp "       GOSTNGX (nginx + OpenSSL + https://github.com/gost-engine/engine) [y/n]: " -e GOSTNGX
 		done
 		while [[ $RTMP != "y" && $RTMP != "n" ]]; do
 			read -rp "       nginx RTMP [y/n]: " -e -i n RTMP
@@ -130,19 +131,20 @@ case $OPTION in
 		if [[ $MODSEC == 'y' ]]; then
 			read -rp "       Enable nginx ModSecurity? [y/n]: " -e MODSEC_ENABLE
 		fi
-		if [[ $HTTP3 != 'y' ]]; then
+		if [[ $GOSTNGX != 'y' ]]; then
 			echo ""
 			echo "Choose your OpenSSL implementation:"
 			echo "   1) System's OpenSSL ($(openssl version | cut -c9-14))"
-			echo "   2) OpenSSL $OPENSSL_VER from source"
-			echo "   3) LibreSSL $LIBRESSL_VER from source "
+			echo "   2) OpenSSL 1.X.X $OPENSSL_VER from source"
+			echo "   3) OpenSSL 3.X.X $OPENSSL_NEXT from source "
+			echo "   4) LIBRESSL 3.5.X $LIBRESSL_VER from source "
 			echo ""
-			while [[ $SSL != "1" && $SSL != "2" && $SSL != "3" ]]; do
-				read -rp "Select an option [1-3]: " SSL
+			while [[ $SSL != "1" && $SSL != "2" && $SSL != "3" && $SSL != "4" ]]; do
+				read -rp "Select an option [1-4]: " SSL
 			done
 		fi
 	fi
-	if [[ $HTTP3 != 'y' ]]; then
+	if [[ $GOSTNGX != 'y' ]]; then
 		case $SSL in
 		1) ;;
 
@@ -150,6 +152,9 @@ case $OPTION in
 			OPENSSL=y
 			;;
 		3)
+			OPENSSL_3=y
+			;;
+		4)
 			LIBRESSL=y
 			;;
 		*)
@@ -170,7 +175,7 @@ case $OPTION in
 
 	# Dependencies
 	apt-get update
-	apt-get install -y build-essential ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
+	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
 
 	if [[ $MODSEC == 'y' ]]; then
 		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf
@@ -222,11 +227,15 @@ case $OPTION in
 
 		mkdir geoip-db
 		cd geoip-db || exit 1
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.mmdb
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.mmdb
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.7z
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.7z
+		7z x
+		7z x
 		mkdir /opt/geoip
 		mv GeoLite2-City.mmdb /opt/geoip/
 		mv GeoLite2-Country.mmdb /opt/geoip/
+		rm GeoLite2-Country.7z
+		rm GeoLite2-City.7z
 	fi
 
 	# Cache Purge
@@ -261,6 +270,16 @@ case $OPTION in
 		./config
 	fi
 
+	# OpenSSL 3.0 NEXT
+	if [[ $OPENSSL_3 == 'y' ]]; then
+		cd /usr/local/src/nginx/modules || exit 1
+		wget https://www.openssl.org/source/openssl-${OPENSSL_NEXT}.tar.gz
+		tar xaf openssl-${OPENSSL_NEXT}.tar.gz
+		cd openssl-${OPENSSL_NEXT} || exit 1
+
+		./config
+	fi
+
 	# NGXWAF
 	if [[ $NGXWAF == 'y' ]]; then
 	cd /usr/local/src/nginx/modules || exit 1
@@ -289,10 +308,10 @@ case $OPTION in
 			sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf
 		fi
 		# OWASP Rules
-		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.2.tar.gz
+		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.4.tar.gz
 		cd /etc/nginx/modsec/ || exit 1
-		tar -xf coreruleset-3.3.2.tar.gz
-		cd coreruleset-3.3.2 || exit 1
+		tar -xf coreruleset-3.3.4.tar.gz
+		cd coreruleset-3.3.4 || exit 1
 		cp crs-setup.conf.example crs-setup.conf
 	fi
 
@@ -381,6 +400,13 @@ case $OPTION in
 		)
 	fi
 
+	if [[ $OPENSSL_3 == 'y' ]]; then
+		NGINX_MODULES=$(
+			echo "$NGINX_MODULES"
+			echo "--with-openssl=/usr/local/src/nginx/modules/openssl-${OPENSSL_NEXT}"
+		)
+	fi
+
 	if [[ $CACHEPURGE == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
@@ -436,8 +462,8 @@ case $OPTION in
 		)
 	fi
 
-	# HTTP3
-	if [[ $HTTP3 == 'y' ]]; then
+	# GOSTNGX 
+	if [[ $GOSTNGX == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		git clone --depth 1 --recursive https://github.com/cloudflare/quiche
 		# Dependencies for BoringSSL and Quiche

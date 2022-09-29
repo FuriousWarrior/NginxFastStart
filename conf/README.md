@@ -58,29 +58,11 @@ TLS- can be TLS13-.
 
 See <https://github.com/leev/ngx_http_geoip2_module#example-usage>
 
-## HTTP/3
-
-See <https://github.com/cloudflare/quiche/tree/master/extras/nginx#readme>
+## GOSTNGX
 
 ```nginx
-server {
-    # Enable QUIC and HTTP/3.
-    listen 443 quic reuseport;
-
-    # Enable HTTP/2 (optional).
-    listen 443 ssl http2;
-
-    ssl_certificate      cert.crt;
-    ssl_certificate_key  cert.key;
-
-    # Enable all TLS versions (TLSv1.3 is required for QUIC).
-    ssl_protocols TLSv1.2 TLSv1.3;
-
-    # Add Alt-Svc header to negotiate HTTP/3.
-    add_header alt-svc 'h3-23=":443"; ma=86400';
-}
+-
 ```
-
 ## ModSecurity
 
 ```nginx
@@ -104,4 +86,35 @@ server {
 # OWASP CRS v3 rules
 Include /etc/nginx/modsec/coreruleset-3.3.4/crs-setup.conf
 Include /etc/nginx/modsec/coreruleset-3.3.4/rules/*.conf
+```
+## NGXWAF
+Configuration Guide, Test module nginx -V and nginx -V & https://docs.addesp.com/ngx_waf/guide/test.html#quick-test
+
+```nginx
+http {
+    waf_zone name=waf size=20m;
+    ...
+    server {
+        ...
+        # on means enabled, off means disabled.
+        waf on;
+
+        # The absolute path to the directory where the rule file is located, must end with /.
+        waf_rule_path /usr/local/src/ngx_waf/assets/rules/;
+
+        # Firewall working mode, STD indicates standard mode.
+        waf_mode STD;
+
+        # CC defense parameter, 1000 requests per minute limit, 
+        # block the corresponding ip for 60 minutes after exceeding the limit.
+        waf_cc_deny on rate=1000r/m duration=60m zone=waf:cc;
+
+        # Cache detection results for up to 50 detection targets, 
+        # effective for all detections 
+        # except IP black and white list detection, CC protection and POST detection.
+        waf_cache on capacity=50;
+        ...
+    }
+    ...
+}
 ```

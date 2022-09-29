@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC1090,SC1091,SC2086,SC2034
+# shellcheck disable=SC1090,SC2086,SC2034,SC1091,SC2027,SC2206,SC2002
 
 if [[ $EUID -ne 0 ]]; then
 	echo -e "Sorry, you need to run this as root"
@@ -10,8 +10,7 @@ fi
 NGINX_MAINLINE_VER=1.23.1
 NGINX_STABLE_VER=1.22.0
 LIBRESSL_VER=3.5.3
-OPENSSL_VER=1.1.1q
-OPENSSL_NEXT=3.0
+OPENSSL_VER=3.0.5
 NPS_VER=1.13.35.2
 HEADERMOD_VER=0.33
 LIBMAXMINDDB_VER=1.6.0
@@ -136,10 +135,9 @@ case $OPTION in
 			echo "Choose your OpenSSL implementation:"
 			echo "   1) System's OpenSSL ($(openssl version | cut -c9-14))"
 			echo "   2) OpenSSL 1.X.X $OPENSSL_VER from source"
-			echo "   3) OpenSSL 3.X.X $OPENSSL_NEXT from source "
-			echo "   4) LIBRESSL 3.5.X $LIBRESSL_VER from source "
+			echo "   3) LIBRESSL 3.X.X $LIBRESSL_VER from source "
 			echo ""
-			while [[ $SSL != "1" && $SSL != "2" && $SSL != "3" && $SSL != "4" ]]; do
+			while [[ $SSL != "1" && $SSL != "2" && $SSL != "3"]]; do
 				read -rp "Select an option [1-4]: " SSL
 			done
 		fi
@@ -152,9 +150,6 @@ case $OPTION in
 			OPENSSL=y
 			;;
 		3)
-			OPENSSL_3=y
-			;;
-		4)
 			LIBRESSL=y
 			;;
 		*)
@@ -229,8 +224,8 @@ case $OPTION in
 		cd geoip-db || exit 1
 		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.7z
 		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.7z
-		7z x
-		7z x
+		7z x GeoLite2-Country.7z
+		7z x GeoLite2-City.7z
 		mkdir /opt/geoip
 		mv GeoLite2-City.mmdb /opt/geoip/
 		mv GeoLite2-Country.mmdb /opt/geoip/
@@ -266,26 +261,60 @@ case $OPTION in
 		wget https://www.openssl.org/source/openssl-${OPENSSL_VER}.tar.gz
 		tar xaf openssl-${OPENSSL_VER}.tar.gz
 		cd openssl-${OPENSSL_VER} || exit 1
-
 		./config
 	fi
 
-	# OpenSSL 3.0 NEXT
-	if [[ $OPENSSL_3 == 'y' ]]; then
-		cd /usr/local/src/nginx/modules || exit 1
-		wget https://www.openssl.org/source/openssl-${OPENSSL_NEXT}.tar.gz
-		tar xaf openssl-${OPENSSL_NEXT}.tar.gz
-		cd openssl-${OPENSSL_NEXT} || exit 1
+	#GOSTNGX
+	if [[ $GOSTNGX == 'y' ]]; then
+	cd /usr/local/src || exit 1
+	mkdir -p /usr/local/src/GOSTNGX
+	cd /usr/local/src/GOSTNGX || exit 1
+	git clone https://github.com/gost-engine/engine.git
+	cd /usr/local/src/GOSTNGX/engine || exit 1
+	#sed -i 's|printf("GOST engine already loaded\\n");|goto end;|' gost_eng.c \
+	mkdir build && cd build
+	cmake -DCMAKE_BUILD_TYPE=Release \
+    -DOPENSSL_ROOT_DIR=${PREFIX} -DOPENSSL_LIBRARIES=${PREFIX}/lib -DOPENSSL_ENGINES_DIR=${ENGINES} .. \
+  	&& cmake --build . --config Release \
+  	&& cmake --build . --target install --config Release \
+  	&& cd bin \
+  	&& cp gostsum gost12sum /usr/local/bin \
+  	&& cd .. \
 
-		./config
+	openssldir="/usr/local/src/nginx/modules/openssl-${OPENSSL_VER}"
+	sed -i '6i openssl_conf=openssl_def' ${openssldir}/openssl.cnf \
+  	&& echo "" >>${openssldir}/openssl.cnf \
+  	&& echo "# OpenSSL default section" >>${openssldir}/openssl.cnf \
+  	&& echo "[openssl_def]" >>${openssldir}/openssl.cnf \
+  	&& echo "engines = engine_section" >>${openssldir}/openssl.cnf \
+ 	&& echo "" >>${openssldir}/openssl.cnf \
+ 	&& echo "# Engine scetion" >>${openssldir}/openssl.cnf \
+  	&& echo "[engine_section]" >>${openssldir}/openssl.cnf \
+  	&& echo "gost = gost_section" >>${openssldir}/openssl.cnf \
+  	&& echo "" >> ${openssldir}/openssl.cnf \
+  	&& echo "# Engine gost section" >>${openssldir}/openssl.cnf \
+  	&& echo "[gost_section]" >>${openssldir}/openssl.cnf \
+  	&& echo "engine_id = gost" >>${openssldir}/openssl.cnf \
+  	&& echo "dynamic_path = /usr/local/src/GOSTNGX/gost.so" >>${openssldir}/openssl.cnf \
+ 	&& echo "default_algorithms = ALL" >>${openssldir}/openssl.cnf \
+  	&& echo "CRYPT_PARAMS = id-Gost28147-89-CryptoPro-A-ParamSet" >>${openssldir}/openssl.cnf
+
 	fi
-
 	# NGXWAF
 	if [[ $NGXWAF == 'y' ]]; then
 	cd /usr/local/src/nginx/modules || exit 1
-	git clone -b master https://github.com/ADD-SP/ngx_waf.git
-	cd ngx_waf || exit 1
-	git clone https://github.com/libinjection/libinjection.git inc/libinjection
+		cd /usr/local/src/nginx/modules || exit 1
+		git clone -b master https://github.com/ADD-SP/ngx_waf.git
+		cd ngx_waf || exit 1
+		git clone https://github.com/libinjection/libinjection.git inc/libinjection
+		# Download Module Standart and MAINLINE version
+		wget -P /usr/local/src/nginx/modules https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/standart.tar.gz
+		wget -P /usr/local/src/nginx/modules https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/mainline.tar.gz
+		cd /usr/local/src/nginx/modules || exit 1
+		tar -xf standart.tar.gz
+		tar -xf mainline.tar.gz
+		rm standart.tar.gz
+		rm mainline.tar.gz
 	fi
 
 	# ModSecurity
@@ -400,13 +429,6 @@ case $OPTION in
 		)
 	fi
 
-	if [[ $OPENSSL_3 == 'y' ]]; then
-		NGINX_MODULES=$(
-			echo "$NGINX_MODULES"
-			echo "--with-openssl=/usr/local/src/nginx/modules/openssl-${OPENSSL_NEXT}"
-		)
-	fi
-
 	if [[ $CACHEPURGE == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
@@ -451,38 +473,6 @@ case $OPTION in
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --add-module=/usr/local/src/nginx/modules/nginx-rtmp-module
-		)
-	fi
-
-	# NGXWAF
-	if [[ $NGXWAF == 'y' ]]; then
-		NGINX_MODULES=$(
-			echo "$NGINX_MODULES"
-			echo "--add-module=/usr/local/src/nginx/modules/ngx_waf"
-		)
-	fi
-
-	# GOSTNGX 
-	if [[ $GOSTNGX == 'y' ]]; then
-		cd /usr/local/src/nginx/modules || exit 1
-		git clone --depth 1 --recursive https://github.com/cloudflare/quiche
-		# Dependencies for BoringSSL and Quiche
-		apt-get install -y golang
-		# Rust is not packaged so that's the only way...
-		curl -sSf https://sh.rustup.rs | sh -s -- -y
-		source "$HOME/.cargo/env"
-
-		cd /usr/local/src/nginx/nginx-${NGINX_VER} || exit 1
-		# Apply actual patch
-		patch -p01 </usr/local/src/nginx/modules/quiche/extras/nginx/nginx-1.16.patch
-
-		NGINX_OPTIONS=$(
-			echo "$NGINX_OPTIONS"
-			echo --with-openssl=/usr/local/src/nginx/modules/quiche/deps/boringssl --with-quiche=/usr/local/src/nginx/modules/quiche
-		)
-		NGINX_MODULES=$(
-			echo "$NGINX_MODULES"
-			echo --with-http_v3_module
 		)
 	fi
 
@@ -533,9 +523,46 @@ case $OPTION in
 		cd /etc/nginx/ssl || exit 1
 		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/conf/ssl.conf
 	fi
+
 	if [[ ! -e /etc/nginx/global/security.conf ]]; then
 		cd /etc/nginx/global || exit 1
 		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/conf/security.conf
+	fi
+
+	if [[ ! -e /etc/nginx/global/global.conf ]]; then
+		cd /etc/nginx/global || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/global/global.conf
+	fi
+
+	if [[ ! -e /etc/nginx/global/proxy.conf ]]; then
+		cd /etc/nginx/global || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/global/proxy.conf
+	fi
+
+	if [[ ! -e /etc/nginx/global/php_fastcgi.conf ]]; then
+		cd /etc/nginx/global || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/global/php_fastcgi.conf
+	fi
+
+	if [[ ! -e /etc/nginx/global/python_uwsgi.conf ]]; then
+		cd /etc/nginx/global || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/global/python_uwsgi.conf
+	fi
+
+	# Example Configs
+	if [[ ! -e /etc/nginx/sites-available/example.com.conf ]]; then
+		cd /etc/nginx/sites-available || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/sites-available/example.com.conf
+	fi
+
+	if [[ ! -e /etc/nginx/sites-available/example.django.com.conf ]]; then
+		cd /etc/nginx/sites-available || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/sites-available/example.django.com.conf 
+	fi
+
+	if [[ ! -e /etc/nginx/sites-available/example.php.com.conf ]]; then
+		cd /etc/nginx/sites-available || exit 1
+		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/sites-available/example.php.com.conf
 	fi
 
 	# Restart Nginx

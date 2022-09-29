@@ -143,7 +143,6 @@ case $OPTION in
 			done
 		fi
 	fi
-	fi
 	if [[ $GOSTNGX != 'y' ]]; then
 		case $SSL in
 		1) ;;

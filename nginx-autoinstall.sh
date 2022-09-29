@@ -130,17 +130,19 @@ case $OPTION in
 		if [[ $MODSEC == 'y' ]]; then
 			read -rp "       Enable nginx ModSecurity? [y/n]: " -e MODSEC_ENABLE
 		fi
+
 		if [[ $GOSTNGX != 'y' ]]; then
 			echo ""
 			echo "Choose your OpenSSL implementation:"
 			echo "   1) System's OpenSSL ($(openssl version | cut -c9-14))"
-			echo "   2) OpenSSL 1.X.X $OPENSSL_VER from source"
-			echo "   3) LIBRESSL 3.X.X $LIBRESSL_VER from source "
+			echo "   2) OpenSSL $OPENSSL_VER from source"
+			echo "   3) LibreSSL $LIBRESSL_VER from source "
 			echo ""
-			while [[ $SSL != "1" && $SSL != "2" && $SSL != "3"]]; do
-				read -rp "Select an option [1-4]: " SSL
+			while [[ $SSL != "1" && $SSL != "2" && $SSL != "3" ]]; do
+				read -rp "Select an option [1-3]: " -e -i 1 SSL
 			done
 		fi
+	fi
 	fi
 	if [[ $GOSTNGX != 'y' ]]; then
 		case $SSL in

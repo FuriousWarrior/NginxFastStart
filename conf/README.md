@@ -87,6 +87,7 @@ server {
 Include /etc/nginx/modsec/coreruleset-3.3.4/crs-setup.conf
 Include /etc/nginx/modsec/coreruleset-3.3.4/rules/*.conf
 ```
+
 ## NGXWAF
 Configuration Guide, Test module nginx -V and nginx -V & https://docs.addesp.com/ngx_waf/guide/test.html#quick-test
 

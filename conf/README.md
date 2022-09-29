@@ -63,6 +63,7 @@ See <https://github.com/leev/ngx_http_geoip2_module#example-usage>
 ```nginx
 -
 ```
+
 ## ModSecurity
 
 ```nginx
@@ -89,7 +90,7 @@ Include /etc/nginx/modsec/coreruleset-3.3.4/rules/*.conf
 ```
 
 ## NGXWAF
-Configuration Guide, Test module nginx -V and nginx -V & https://docs.addesp.com/ngx_waf/guide/test.html#quick-test
+Configuration Guide, Test module nginx -V and nginx -V &  https://docs.addesp.com/ngx_waf/guide/test.html#quick-test
 
 ```nginx
 http {

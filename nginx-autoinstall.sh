@@ -273,7 +273,7 @@ case $OPTION in
 	git clone https://github.com/gost-engine/engine.git
 	cd /usr/local/src/GOSTNGX/engine || exit 1
 	#sed -i 's|printf("GOST engine already loaded\\n");|goto end;|' gost_eng.c \
-	mkdir build && cd build
+	mkdir build && cd build || exit 1
 	cmake -DCMAKE_BUILD_TYPE=Release \
     -DOPENSSL_ROOT_DIR=${PREFIX} -DOPENSSL_LIBRARIES=${PREFIX}/lib -DOPENSSL_ENGINES_DIR=${ENGINES} .. \
   	&& cmake --build . --config Release \

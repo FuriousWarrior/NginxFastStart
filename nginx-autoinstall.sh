@@ -307,10 +307,6 @@ case $OPTION in
 		git clone -b master https://github.com/ADD-SP/ngx_waf.git
 		cd ngx_waf || exit 1
 		git clone https://github.com/libinjection/libinjection.git inc/libinjection
-		./configure --add-dynamic-module=/usr/local/src/nginx/modules/ngx_waf --with-compat --with-debug
-		#sed -i 's/^\(CFLAGS.*\)/\1 -fstack-protector-strong -Wno-sign-compare/' objs/Makefile
-		make modules
-		cp objs/*.so /usr/local/nginx/modules
 	fi
 
 	# ModSecurity
@@ -453,6 +449,13 @@ case $OPTION in
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo --add-module=/usr/local/src/nginx/modules/nginx-module-vts
+		)
+	fi
+
+	if [[ $NGXWAF == 'y' ]]; then
+		NGINX_MODULES=$(
+			echo "$NGINX_MODULES"
+			echo --add-dynamic-module=/usr/local/src/nginx/modules/ngx_waf
 		)
 	fi
 

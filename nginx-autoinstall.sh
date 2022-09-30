@@ -303,15 +303,14 @@ case $OPTION in
 	fi
 	# NGXWAF
 	if [[ $NGXWAF == 'y' ]]; then
-	cd /usr/local/src/nginx/modules || exit 1
-		cd /usr/local/src/nginx/modules || exit 1
+		cd  /etc/nginx/ || exit 1
 		git clone -b master https://github.com/ADD-SP/ngx_waf.git
-		cd ngx_waf || exit 1
+		cd /etc/nginx/ngx_waf || exit 1
 		git clone https://github.com/libinjection/libinjection.git inc/libinjection
 		# Download Module Standart and MAINLINE version
-		wget -P /usr/local/src/nginx/modules https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/standart.tar.gz
-		wget -P /usr/local/src/nginx/modules https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/mainline.tar.gz
-		cd /usr/local/src/nginx/modules || exit 1
+		wget -P /etc/nginx/ngx_waf https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/standart.tar.gz
+		wget -P /etc/nginx/ngx_waf https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/mainline.tar.gz
+		cd /etc/nginx/ngx_waf || exit 1
 		tar -xf standart.tar.gz
 		tar -xf mainline.tar.gz
 		rm standart.tar.gz

@@ -171,7 +171,7 @@ case $OPTION in
 
 	# Dependencies
 	apt-get update
-	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake
+	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake flex bison
 
 	if [[ $MODSEC == 'y' ]]; then
 		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf
@@ -275,7 +275,7 @@ case $OPTION in
 	#sed -i 's|printf("GOST engine already loaded\\n");|goto end;|' gost_eng.c \
 	mkdir build && cd build || exit 1
 	cmake -DCMAKE_BUILD_TYPE=Release \
-    -DOPENSSL_ROOT_DIR=${PREFIX} -DOPENSSL_LIBRARIES=${PREFIX}/lib -DOPENSSL_ENGINES_DIR=${ENGINES} .. \
+    -DOPENSSL_ROOT_DIR=${openssldir} -DOPENSSL_LIBRARIES=${openssldir}/lib -DOPENSSL_ENGINES_DIR=${OPENSSL_VER} .. \
   	&& cmake --build . --config Release \
   	&& cmake --build . --target install --config Release \
   	&& cd bin \
@@ -303,18 +303,14 @@ case $OPTION in
 	fi
 	# NGXWAF
 	if [[ $NGXWAF == 'y' ]]; then
-		cd  /etc/nginx/ || exit 1
+		cd /usr/local/src/nginx/modules || exit 1
 		git clone -b master https://github.com/ADD-SP/ngx_waf.git
-		cd /etc/nginx/ngx_waf || exit 1
+		cd ngx_waf || exit 1
 		git clone https://github.com/libinjection/libinjection.git inc/libinjection
-		# Download Module Standart and MAINLINE version
-		wget -P /etc/nginx/ngx_waf https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/standart.tar.gz
-		wget -P /etc/nginx/ngx_waf https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/ngx_waf/mainline.tar.gz
-		cd /etc/nginx/ngx_waf || exit 1
-		tar -xf standart.tar.gz
-		tar -xf mainline.tar.gz
-		rm standart.tar.gz
-		rm mainline.tar.gz
+		./configure --add-dynamic-module=/usr/local/src/nginx/modules/ngx_waf --with-compat --with-debug
+		#sed -i 's/^\(CFLAGS.*\)/\1 -fstack-protector-strong -Wno-sign-compare/' objs/Makefile
+		make modules
+		cp objs/*.so /usr/local/nginx/modules
 	fi
 
 	# ModSecurity

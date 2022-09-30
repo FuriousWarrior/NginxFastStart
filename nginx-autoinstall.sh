@@ -271,7 +271,6 @@ case $OPTION in
 		git clone https://github.com/tokers/zstd-nginx-module.git
 	fi
 
-	fi
 	# NGXWAF
 	if [[ $NGXWAF == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1

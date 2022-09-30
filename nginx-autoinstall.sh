@@ -28,7 +28,7 @@ if [[ $HEADLESS == "y" ]]; then
 	CACHEPURGE=${CACHEPURGE:-n}
 	WEBDAV=${WEBDAV:-n}
 	VTS=${VTS:-n}
-	GOSTNGX=${GOSTNGX:-n}
+	zstd=${zstd:-n}
 	MODSEC=${MODSEC:-n}
 	RTMP=${RTMP:-n}
 	NGXWAF=${NGXWAF:-n}
@@ -115,8 +115,8 @@ case $OPTION in
 		while [[ $VTS != "y" && $VTS != "n" ]]; do
 			read -rp "       nginx VTS [y/n]: " -e VTS
 		done
-		while [[ $GOSTNGX != "y" && $GOSTNGX != "n" ]]; do
-			read -rp "       GOSTNGX (nginx + OpenSSL + https://github.com/gost-engine/engine) [y/n]: " -e GOSTNGX
+		while [[ $zstd != "y" && $zstd != "n" ]]; do
+			read -rp "  	 zstd-Nginx module for the Zstandard compression.[y/n]: " -e zstd
 		done
 		while [[ $RTMP != "y" && $RTMP != "n" ]]; do
 			read -rp "       nginx RTMP [y/n]: " -e -i n RTMP
@@ -131,7 +131,7 @@ case $OPTION in
 			read -rp "       Enable nginx ModSecurity? [y/n]: " -e MODSEC_ENABLE
 		fi
 
-		if [[ $GOSTNGX != 'y' ]]; then
+		if [[ $SSLVER != 'y' ]]; then
 			echo ""
 			echo "Choose your OpenSSL implementation:"
 			echo "   1) System's OpenSSL ($(openssl version | cut -c9-14))"
@@ -143,7 +143,7 @@ case $OPTION in
 			done
 		fi
 	fi
-	if [[ $GOSTNGX != 'y' ]]; then
+	if [[ $SSLVER != 'y' ]]; then
 		case $SSL in
 		1) ;;
 
@@ -265,40 +265,11 @@ case $OPTION in
 		./config
 	fi
 
-	#GOSTNGX
-	if [[ $GOSTNGX == 'y' ]]; then
-	cd /usr/local/src || exit 1
-	mkdir -p /usr/local/src/GOSTNGX
-	cd /usr/local/src/GOSTNGX || exit 1
-	git clone https://github.com/gost-engine/engine.git
-	cd /usr/local/src/GOSTNGX/engine || exit 1
-	#sed -i 's|printf("GOST engine already loaded\\n");|goto end;|' gost_eng.c \
-	mkdir build && cd build || exit 1
-	cmake -DCMAKE_BUILD_TYPE=Release \
-    -DOPENSSL_ROOT_DIR=${openssldir} -DOPENSSL_LIBRARIES=${openssldir}/lib -DOPENSSL_ENGINES_DIR=${OPENSSL_VER} .. \
-  	&& cmake --build . --config Release \
-  	&& cmake --build . --target install --config Release \
-  	&& cd bin \
-  	&& cp gostsum gost12sum /usr/local/bin \
-  	&& cd .. \
-
-	openssldir="/usr/local/src/nginx/modules/openssl-${OPENSSL_VER}"
-	sed -i '6i openssl_conf=openssl_def' ${openssldir}/openssl.cnf \
-  	&& echo "" >>${openssldir}/openssl.cnf \
-  	&& echo "# OpenSSL default section" >>${openssldir}/openssl.cnf \
-  	&& echo "[openssl_def]" >>${openssldir}/openssl.cnf \
-  	&& echo "engines = engine_section" >>${openssldir}/openssl.cnf \
- 	&& echo "" >>${openssldir}/openssl.cnf \
- 	&& echo "# Engine scetion" >>${openssldir}/openssl.cnf \
-  	&& echo "[engine_section]" >>${openssldir}/openssl.cnf \
-  	&& echo "gost = gost_section" >>${openssldir}/openssl.cnf \
-  	&& echo "" >> ${openssldir}/openssl.cnf \
-  	&& echo "# Engine gost section" >>${openssldir}/openssl.cnf \
-  	&& echo "[gost_section]" >>${openssldir}/openssl.cnf \
-  	&& echo "engine_id = gost" >>${openssldir}/openssl.cnf \
-  	&& echo "dynamic_path = /usr/local/src/GOSTNGX/gost.so" >>${openssldir}/openssl.cnf \
- 	&& echo "default_algorithms = ALL" >>${openssldir}/openssl.cnf \
-  	&& echo "CRYPT_PARAMS = id-Gost28147-89-CryptoPro-A-ParamSet" >>${openssldir}/openssl.cnf
+	# zstd-nginx-module
+	if [[ $zstd == 'y' ]]; then
+		cd /usr/local/src/nginx/modules || exit 1
+		git clone https://github.com/tokers/zstd-nginx-module.git
+	fi
 
 	fi
 	# NGXWAF
@@ -452,10 +423,10 @@ case $OPTION in
 		)
 	fi
 
-	if [[ $NGXWAF == 'y' ]]; then
+	if [[ $zstd == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
-			echo --add-dynamic-module=/usr/local/src/nginx/modules/ngx_waf
+			echo "--add-module=/usr/local/src/nginx/modules/zstd-nginx-module"
 		)
 	fi
 

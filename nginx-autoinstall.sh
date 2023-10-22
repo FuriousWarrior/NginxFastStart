@@ -7,20 +7,18 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.23.1
-NGINX_STABLE_VER=1.22.0
-LIBRESSL_VER=3.5.3
-OPENSSL_VER=3.0.5
-NPS_VER=1.13.35.2
-HEADERMOD_VER=0.33
-LIBMAXMINDDB_VER=1.6.0
-GEOIP2_VER=3.3
+NGINX_MAINLINE_VER=1.25.2
+NGINX_STABLE_VER=1.25.0
+LIBRESSL_VER=3.7.3
+OPENSSL_VER=3.1.3
+HEADERMOD_VER=0.34
+LIBMAXMINDDB_VER=1.7.1
+GEOIP2_VER=3.4
 
 # Define installation paramaters for headless install (fallback if unspecifed)
 if [[ $HEADLESS == "y" ]]; then
 	OPTION=${OPTION:-1}
 	NGINX_VER=${NGINX_VER:-1}
-	PAGESPEED=${PAGESPEED:-n}
 	BROTLI=${BROTLI:-n}
 	HEADERMOD=${HEADERMOD:-n}
 	GEOIP=${GEOIP:-n}
@@ -31,7 +29,6 @@ if [[ $HEADLESS == "y" ]]; then
 	zstd=${zstd:-n}
 	MODSEC=${MODSEC:-n}
 	RTMP=${RTMP:-n}
-	NGXWAF=${NGXWAF:-n}
 	SSL=${SSL:-1}
 	RM_CONF=${RM_CONF:-y}
 	RM_LOGS=${RM_LOGS:-y}
@@ -91,9 +88,6 @@ case $OPTION in
 		echo "If you select none, Nginx will be installed with its default modules."
 		echo ""
 		echo "Modules to install :"
-		while [[ $PAGESPEED != "y" && $PAGESPEED != "n" ]]; do
-			read -rp "       PageSpeed $NPS_VER [y/n]: " -e PAGESPEED
-		done
 		while [[ $BROTLI != "y" && $BROTLI != "n" ]]; do
 			read -rp "       Brotli [y/n]: " -e BROTLI
 		done
@@ -116,13 +110,10 @@ case $OPTION in
 			read -rp "       nginx VTS [y/n]: " -e VTS
 		done
 		while [[ $zstd != "y" && $zstd != "n" ]]; do
-			read -rp "  	 zstd-Nginx module for the Zstandard compression.[y/n]: " -e zstd
+			read -rp "       zstd-Nginx module for the Zstandard compression.[y/n]: " -e zstd
 		done
 		while [[ $RTMP != "y" && $RTMP != "n" ]]; do
 			read -rp "       nginx RTMP [y/n]: " -e -i n RTMP
-		done
-		while [[ $NGXWAF != "y" && $NGXWAF != "n" ]]; do
-			read -rp "       nginx NGXWAF [y/n]: " -e NGXWAF
 		done
 		while [[ $MODSEC != "y" && $MODSEC != "n" ]]; do
 			read -rp "       nginx ModSecurity [y/n]: " -e MODSEC
@@ -134,12 +125,13 @@ case $OPTION in
 		if [[ $SSLVER != 'y' ]]; then
 			echo ""
 			echo "Choose your OpenSSL implementation:"
+			echo "LibreSSL library is recommended for correct http//3"
 			echo "   1) System's OpenSSL ($(openssl version | cut -c9-14))"
 			echo "   2) OpenSSL $OPENSSL_VER from source"
 			echo "   3) LibreSSL $LIBRESSL_VER from source "
 			echo ""
 			while [[ $SSL != "1" && $SSL != "2" && $SSL != "3" ]]; do
-				read -rp "Select an option [1-3]: " -e -i 1 SSL
+				read -rp "Select an option [1-3]: " -e -i 3 SSL
 			done
 		fi
 	fi
@@ -172,30 +164,21 @@ case $OPTION in
 	# Dependencies
 	apt-get update
 	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake flex bison
+	
 
 	if [[ $MODSEC == 'y' ]]; then
 		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf
 	fi
 
-	# PageSpeed
-	if [[ $PAGESPEED == 'y' ]]; then
-		cd /usr/local/src/nginx/modules || exit 1
-		wget https://github.com/pagespeed/ngx_pagespeed/archive/v${NPS_VER}-stable.zip
-		unzip v${NPS_VER}-stable.zip
-		cd incubator-pagespeed-ngx-${NPS_VER}-stable || exit 1
-		psol_url=https://dl.google.com/dl/page-speed/psol/${NPS_VER}.tar.gz
-		[ -e scripts/format_binary_url.sh ] && psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
-		wget "${psol_url}"
-		tar -xzvf "$(basename "${psol_url}")"
-	fi
-
 	#Brotli
 	if [[ $BROTLI == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
-		git clone --depth 1 https://github.com/eustas/ngx_brotli
-		cd ngx_brotli || exit 1
-		git checkout v0.1.2
-		git submodule update --init
+		git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
+		cd ngx_brotli/deps/brotli || exit 1
+		mkdir out && cd out  || exit 1
+		cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_C_FLAGS="-Ofast -m64 -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" -DCMAKE_CXX_FLAGS="-Ofast -m64 -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" -DCMAKE_INSTALL_PREFIX=./installed ..
+		cmake --build . --config Release --target brotlienc
+
 	fi
 
 	# More Headers
@@ -223,15 +206,16 @@ case $OPTION in
 
 		mkdir geoip-db
 		cd geoip-db || exit 1
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-Country.7z
-		wget https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/GeoLite2/GeoLite2-City.7z
-		7z x GeoLite2-Country.7z
-		7z x GeoLite2-City.7z
+		vremya=$(date +"%Y-%m")
+		wget https://download.db-ip.com/free/dbip-country-lite-$vremya.mmdb.gz
+		wget https://download.db-ip.com/free/dbip-city-lite-$vremya.mmdb.gz
+		7z x dbip-country-lite-$vremya.mmdb.gz
+		7z x dbip-city-lite-$vremya.mmdb.gz
 		mkdir /opt/geoip
-		mv GeoLite2-City.mmdb /opt/geoip/
-		mv GeoLite2-Country.mmdb /opt/geoip/
-		rm GeoLite2-Country.7z
-		rm GeoLite2-City.7z
+		mv dbip-country-lite-$vremya.mmdb /opt/geoip/
+		mv dbip-city-lite-$vremya.mmdb /opt/geoip/
+		rm dbip-country-lite-$vremya.mmdb.gz
+		rm dbip-city-lite-$vremya.mmdb.gz
 	fi
 
 	# Cache Purge
@@ -265,20 +249,16 @@ case $OPTION in
 		./config
 	fi
 
-	# zstd-nginx-module
+	# zstd-nginx-module https://github.com/facebook/zstd https://github.com/tokers/zstd-nginx-module
 	if [[ $zstd == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
 		git clone https://github.com/tokers/zstd-nginx-module.git
+		cd /usr/local/src || exit 1
+		git clone https://github.com/facebook/zstd.git
+		cd /usr/local/src/zstd || exit 1
+		make
+		make install
 	fi
-
-	# NGXWAF
-	if [[ $NGXWAF == 'y' ]]; then
-		cd /usr/local/src/nginx/modules || exit 1
-		git clone -b master https://github.com/ADD-SP/ngx_waf.git
-		cd ngx_waf || exit 1
-		git clone https://github.com/libinjection/libinjection.git inc/libinjection
-	fi
-
 	# ModSecurity
 	if [[ $MODSEC == 'y' ]]; then
 		cd /usr/local/src/nginx/modules || exit 1
@@ -299,10 +279,10 @@ case $OPTION in
 			sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf
 		fi
 		# OWASP Rules
-		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.4.tar.gz
+		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.5.tar.gz
 		cd /etc/nginx/modsec/ || exit 1
-		tar -xf coreruleset-3.3.4.tar.gz
-		cd coreruleset-3.3.4 || exit 1
+		tar -xf coreruleset-3.3.5.tar.gz
+		cd coreruleset-3.3.5 || exit 1
 		cp crs-setup.conf.example crs-setup.conf
 	fi
 
@@ -333,12 +313,22 @@ case $OPTION in
 		--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
 		--user=nginx \
 		--group=nginx \
-		--with-cc-opt=-Wno-deprecated-declarations \
+		--with-cc-opt=-fstack-protector \
+		--with-cc-opt=-fstack-protector-strong \
+		--with-cc-opt=--param=ssp-buffer-size=4 \
+		--with-cc-opt=-Wformat \
+		--with-cc-opt=-Werror=format-security \
+		--with-cc-opt=-Werror=implicit-function-declaration \
+		--with-cc-opt=-fPIC \
+		--with-cc-opt=-Werror=deprecated-declarations \
+		--with-cc-opt=-Wno-error=name_of_warning \
 		--with-cc-opt=-Wno-ignored-qualifiers"
 	NGINX_MODULES="--with-threads \
+		--with-compat \
 		--with-file-aio \
 		--with-http_ssl_module \
 		--with-http_v2_module \
+		--with-http_v3_module \
 		--with-http_mp4_module \
 		--with-http_auth_request_module \
 		--with-http_slice_module \
@@ -359,7 +349,7 @@ case $OPTION in
 	if [[ $PAGESPEED == 'y' ]]; then
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
-			echo "--add-module=/usr/local/src/nginx/modules/incubator-pagespeed-ngx-${NPS_VER}-stable"
+			echo "--add-module=/usr/local/src/nginx/modules/incubator-pagespeed-ngx-${NPS_VER}"
 		)
 	fi
 
@@ -395,6 +385,13 @@ case $OPTION in
 		NGINX_MODULES=$(
 			echo "$NGINX_MODULES"
 			echo "--add-module=/usr/local/src/nginx/modules/ngx_cache_purge"
+		)
+	fi
+
+	if [[ $NGXSUBFILTER == 'y' ]]; then
+		NGINX_MODULES=$(
+			echo "$NGXNGINX_MODULES"
+			echo "--add-module=/usr/local/src/nginx/modules/ngx_http_substitutions_filter_module"
 		)
 	fi
 

@@ -14,12 +14,11 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu:16.04
           - ubuntu:18.04
           - ubuntu:20.04
-          - debian:9
           - debian:10
           - debian:11
+          - debian:12
         nginx_ver:
           - STABLE
           - MAINLINE
@@ -31,7 +30,6 @@ jobs:
           - OPENSSL
           - LIBRESSL
         exclude:
-          # FULL assumes HTTP/3 which will use BoringSSL
           # So we exclude these
           - install_type: FULL
             ssl: OPENSSL

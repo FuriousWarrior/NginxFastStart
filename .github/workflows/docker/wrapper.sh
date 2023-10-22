@@ -12,8 +12,6 @@ if [[ $INSTALL_TYPE == "FULL" ]]; then
     export WEBDAV=y
     export VTS=y
     export RTMP=y
-    export GOSTNGX=n
-    export NGXWAF=n
     export MODSEC=y
 fi
 

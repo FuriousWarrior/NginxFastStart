@@ -163,7 +163,7 @@ case $OPTION in
 
 	# Dependencies
 	apt-get update
-	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake flex bison
+	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libbrotli-dev libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake flex bison
 	
 
 	if [[ $MODSEC == 'y' ]]; then

@@ -60,7 +60,7 @@ To update Nginx, run the script and install Nginx again. It will overwrite curre
 
 ## Update the script
 
-The update feature downloads the script from this repository, and overwrites the current `nginx-autoinstall.sh` file in the working directory. This allows you to get the latest features, bug fixes, and module versions automatically.
+The update feature downloads the script from this repository, and overwrites the current `nginx-autoinstall.sh` file in the working directory. This allows you to get the latest features, bugfixes, and module versions automatically.
 
 ## Headless use
 

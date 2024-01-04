@@ -163,11 +163,11 @@ case $OPTION in
 
 	# Dependencies
 	apt-get update
-	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libbrotli-dev libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake flex bison
+	apt-get install -y build-essential p7zip-full ca-certificates libsodium-dev wget curl libpcre3 libbrotli-dev libpcre3-dev autoconf unzip automake libtool tar git libssl-dev zlib1g-dev uuid-dev lsb-release libxml2-dev libxslt1-dev uthash-dev cmake flex bison gcc-multilib libzstd-dev
 	
 
 	if [[ $MODSEC == 'y' ]]; then
-		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre++-dev libyajl-dev pkgconf
+		apt-get install -y apt-utils libcurl4-openssl-dev libgeoip-dev liblmdb-dev libpcre2-dev libyajl-dev pkgconf
 	fi
 
 	#Brotli
@@ -335,7 +335,10 @@ case $OPTION in
 		--with-http_stub_status_module \
 		--with-http_realip_module \
 		--with-http_sub_module \
+		--with-http_gunzip_module \
 		--with-stream \
+		--with-stream_ssl_module \
+		--with-stream_realip_module\
         --with-stream_ssl_preread_module"
 
 	# Optional modules

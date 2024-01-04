@@ -10,8 +10,8 @@ if [[ $INSTALL_TYPE == "FULL" ]]; then
     export CACHEPURGE=y
     export WEBDAV=y
     export VTS=y
-    export RTMP=y
-    export zstd=y
+    export RTMP=n
+    export zstd=n
     export MODSEC=n
 fi
 

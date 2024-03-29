@@ -281,7 +281,7 @@ case $OPTION in
 		# OWASP Rules
 		wget -P /etc/nginx/modsec/ https://github.com/coreruleset/coreruleset/archive/refs/tags/v4.1.0.tar.gz
 		cd /etc/nginx/modsec/ || exit 1
-		tar -xf coreruleset-4.1.0.tar.gz
+		tar -xf v4.1.0.tar.gz
 		cd coreruleset-4.1.0 || exit 1
 		cp crs-setup.conf.example crs-setup.conf
 	fi

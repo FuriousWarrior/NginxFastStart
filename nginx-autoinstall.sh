@@ -7,12 +7,12 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Define versions
-NGINX_MAINLINE_VER=1.25.3
+NGINX_MAINLINE_VER=1.25.4
 NGINX_STABLE_VER=1.25.0
-LIBRESSL_VER=3.8.2
-OPENSSL_VER=3.2.0
-HEADERMOD_VER=0.34
-LIBMAXMINDDB_VER=1.8.0
+LIBRESSL_VER=3.9.1
+OPENSSL_VER=3.3.0
+HEADERMOD_VER=0.37
+LIBMAXMINDDB_VER=1.9.1
 GEOIP2_VER=3.4
 
 # Define installation paramaters for headless install (fallback if unspecifed)

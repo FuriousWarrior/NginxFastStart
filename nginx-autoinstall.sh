@@ -279,10 +279,10 @@ case $OPTION in
 			sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf
 		fi
 		# OWASP Rules
-		wget -P /etc/nginx/modsec/ https://raw.githubusercontent.com/FuriousWarrior/NginxFastStart/master/CRS3/coreruleset-3.3.5.tar.gz
+		wget -P /etc/nginx/modsec/ https://github.com/coreruleset/coreruleset/archive/refs/tags/v4.1.0.tar.gz
 		cd /etc/nginx/modsec/ || exit 1
-		tar -xf coreruleset-3.3.5.tar.gz
-		cd coreruleset-3.3.5 || exit 1
+		tar -xf coreruleset-4.1.0.tar.gz
+		cd coreruleset-4.1.0 || exit 1
 		cp crs-setup.conf.example crs-setup.conf
 	fi
 

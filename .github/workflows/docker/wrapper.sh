@@ -11,7 +11,7 @@ if [[ $INSTALL_TYPE == "FULL" ]]; then
     export WEBDAV=y
     export VTS=y
     export RTMP=n
-    export zstd=y
+    export zstd=n
     export MODSEC=n
 fi
 
